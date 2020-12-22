@@ -9,7 +9,7 @@ const crearDeportista = async(req, res) => {
         deportista.entrenador=req.uid;
         const deportistaSaved = await deportista.save();
 
-        res.status(200).json({
+        return res.status(200).json({
             ok:true,
             deportista: deportistaSaved
         })
@@ -20,10 +20,6 @@ const crearDeportista = async(req, res) => {
             msg: 'Contacte al administrador'
         })
     }
-    res.json({
-        ok: true,
-        msg:'Crear'
-    })
 }
 const getDeportistas = async(req, res) => {
     
@@ -35,32 +31,110 @@ const getDeportistas = async(req, res) => {
         deportistas
     })
 }
-const getOneDeportista = (req, res) => {
+const getOneDeportista = async(req, res) => {
+    
+    const {id} =req.params;
+    try {
+        
+        const deportista = await Deportista.findOne({_id:id}).populate('entrenador', 'username');
+        if(!deportista){
+            return res.status(404).json({
+                ok: true,
+                msg:'El deportista no existe en la base de datos'
+            })
+        }
+        
+        return res.status(200).json({
+            ok: true,
+            deportista
+            
+        })
+    } catch (error) {
+        console.log(error)
+        return res.status(404).json({
+            ok:false,
+            msg: 'Contacte al administrador'
+        });
+    }
+    
     
     
 
-    res.json({
-        ok: true,
-        msg:'obtener uno'
-    })
+    
 }
-const editarDeportista = (req, res) => {
+const editarDeportista = async(req, res) => {
     
+    const {id} = req.params; 
+    const uid = req.uid;
     
-
-    res.json({
-        ok: true,
-        msg:'Editar'
-    })
+    try {
+        const deportista = await Deportista.findById(id);
+        if(!deportista){
+            return res.status(404).json({
+                ok: true,
+                msg:'El deportista no existe en la base de datos'
+            })
+        }
+        if(deportista.entrenador.toString() !== uid){
+            return res.status(401).json({
+                ok:false,
+                msg:'No tiene permiso para realizar esta accion'
+            })  
+        }
+        
+        const nuevoDeportista = {
+            ...req.body,
+            user:uid
+        }
+        const updateDeportista = await Deportista.findByIdAndUpdate(id, nuevoDeportista, {new:true})
+        return res.json({
+            ok: true,
+            deportista: updateDeportista
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            ok:false,
+            msg:'Contacte al administrador'
+        })
+    }
 }
-const eliminarDeportista = (req, res) => {
+const eliminarDeportista = async(req, res) => {
     
+    const {id} = req.params; 
+    const uid = req.uid;
     
+    try {
+        const deportista = await Deportista.findById(id);
+        if(!deportista){
+            return res.status(404).json({
+                ok: true,
+                msg:'El deportista no existe en la base de datos'
+            })
+        }
+        if(deportista.entrenador.toString() !== uid){
+            return res.status(401).json({
+                ok:false,
+                msg:'No tiene permiso para realizar esta accion'
+            })  
+        }
+        
+        const deleteDeportista = await Deportista.findByIdAndDelete(id);
+        return res.json({
+            ok: true,
+            deportista: deleteDeportista
+        })
+        
+    } catch (error) {
+        console.log(error);
+        res.status(404).json({
+            ok:false,
+            msg:'Contacte al administrador'
+        })
+    }
 
-    res.json({
-        ok: true,
-        msg:'Eliminar'
-    })
+    
 }
 
 

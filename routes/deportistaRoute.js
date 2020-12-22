@@ -33,7 +33,16 @@ router.post(
 );
 router.get('/:id', getOneDeportista);
 
-router.put('/edit/:id',editarDeportista );
+router.put(
+    '/edit/:id',
+    [
+        check('name', 'El nombre es obligatorio!').not().isEmpty(),
+        check('identificacion', 'Numero de identificacion es obligatorio!').not().isEmpty(),
+        check('fechaNacimiento', 'Debe de digitar correctamente la fecha de nacimiento').custom( isDate ),
+        validarCampos
+    ],
+    editarDeportista 
+);
 router.delete('/delete/:id',eliminarDeportista);
 
 
